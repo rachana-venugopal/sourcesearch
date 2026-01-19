@@ -3,18 +3,24 @@ from dotenv import load_dotenv
 import os
 import requests
 import time 
+import certifi 
+from pathlib import Path
 
-# Load .env file
-load_dotenv()
+# Load .env file (robust)
+load_dotenv(dotenv_path=Path(__file__).resolve().parent / ".env")
 
 # Get the URI and token from environment
 mongo_uri = os.getenv("MONGO_URI")
 github_token = os.getenv("GITHUB_TOKEN")
 
-# Connect to MongoDB
-client = MongoClient(mongo_uri)
+# Safety check (VERY helpful)
+if not mongo_uri:
+    raise RuntimeError("MONGO_URI is not set. Check your .env file.")
 
-# Choose your database and collection (element to belong to database)
+# Connect to MongoDB
+client = MongoClient(mongo_uri, tlsCAFile=certifi.where())
+
+# Choose your database and collection
 db = client["my_database"]
 collection = db["my_collection"]
 
@@ -26,7 +32,7 @@ if github_token:
 # tests whether a document can be created, if it is added to a collection, and mongo db stores that collection
 def test_mongo_connection():
     # Insert a test document
-    doc = {"name": "Juhi", "project": "SourceSearch"}
+    doc = {"name": "Rachana", "project": "SourceSearch"}
     collection.insert_one(doc)
 
     # Print all documents
